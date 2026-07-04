@@ -1,0 +1,25 @@
+{
+  "name": "taskflow-internship",
+  "version": "1.0.0",
+  "description": "This is my internship project where I will learn full-stack development using Node.js and GitHub.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LyneAssaad/taskflow-internship.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LyneAssaad/taskflow-internship/issues"
+  },
+  "homepage": "https://github.com/LyneAssaad/taskflow-internship#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "mysql2": "^3.22.5"
+  }
+}
