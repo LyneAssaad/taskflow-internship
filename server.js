@@ -1,12 +1,17 @@
 const express = require('express');
 const mysql = require('mysql2');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const app = express();
 app.get('/test', (req, res) => {
     res.send('TEST ROUTE WORKING');
 });
 
 app.use(express.json());
-
+app.get('/debug', (req, res) => {
+    res.send('LOGIN TEST OK');
+});
+const JWT_SECRET = 'taskflow_secret_key';
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -21,10 +26,25 @@ db.connect((err) => {
         console.log('Connected to MySQL Database');
     }
 });
+function verifyToken(req, res, next) {
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.send('Access denied. No token provided.');
+    }
+
+    try {
+        const verified = jwt.verify(token, 'taskflow_secret_key');
+        req.user = verified;
+        next();
+    } catch (err) {
+        res.send('Invalid token');
+    }
+}
 app.get('/', (req, res) => {
     res.send('Hello World from TaskFlow Server');
 });
-app.get('/projects', (req, res) => {
+app.get('/projects', verifyToken, (req, res) => {
     const sql = 'SELECT * FROM Project';
 
     db.query(sql, (err, results) => {
@@ -85,7 +105,7 @@ app.delete('/projects/:id', (req, res) => {
         }
     });
 });
-app.get('/tasks', (req, res) => {
+app.get('/tasks', verifyToken, (req, res)=> {
     const sql = 'SELECT * FROM Task';
 
     db.query(sql, (err, results) => {
@@ -158,6 +178,59 @@ app.get('/test-create', (req, res) => {
         } else {
             res.send('Project created successfully');
         }
+    });
+});
+app.post('/register', async (req, res) => {
+    const { Name, Email, Password } = req.body;
+
+    // Encrypt (hash) the password
+    const hashedPassword = await bcrypt.hash(Password, 10);
+
+    const sql = `
+        INSERT INTO User (Name, Email, Password, Created_at)
+        VALUES (?, ?, ?, NOW())
+    `;
+
+    db.query(sql, [Name, Email, hashedPassword], (err) => {
+        if (err) {
+            res.send('Error registering user');
+        } else {
+            res.send('User registered successfully');
+        }
+    });
+});
+app.post('/login', (req, res) => {
+    const { Email, Password } = req.body;
+
+    const sql = "SELECT * FROM User WHERE Email = ?";
+
+    db.query(sql, [Email], async (err, results) => {
+        if (err) {
+            return res.send('Error logging in');
+        }
+
+        if (results.length === 0) {
+            return res.send('User not found');
+        }
+
+        const user = results[0];
+
+        const isMatch = await bcrypt.compare(Password, user.Password);
+
+        if (!isMatch) {
+            return res.send('Wrong password');
+        }
+
+        const token = jwt.sign(
+            { id: user.User_id, email: user.Email },
+            JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.json({
+            message: 'Login successful',
+            token: token
+        });
     });
 });
 
