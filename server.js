@@ -10,7 +10,7 @@ const corsOptions = {
     origin: "http://localhost:5173",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type"]
+    allowedHeaders: ["Content-Type", "Authorization"]
 };
 
 app.use(cors(corsOptions));
@@ -236,30 +236,35 @@ app.post('/tasks', (req, res) => {
 
 
 app.put('/tasks/:id', (req, res) => {
+     console.log("PUT TASK ROUTE REACHED");
 
-    const { Title, Description, Status } = req.body;
+    const { Title, Description, Status, Project_id } = req.body;
+
+    console.log("Backend received:", req.body);
 
     const id = req.params.id;
 
 
     const sql = `
         UPDATE Task
-        SET Title = ?, Description = ?, Status = ?
+        SET Title = ?, Description = ?, Status = ?, Project_id = ?
         WHERE Task_id = ?
     `;
 
 
     db.query(
         sql,
-        [Title, Description, Status, id],
-        (err) => {
+        [Title, Description, Status, Project_id, id],
+        (err, result) => {
 
             if (err) {
 
+                console.log(err);
                 res.send('Error updating task');
 
             } else {
 
+                console.log("Database update result:", result);
                 res.send('Task updated successfully');
 
             }
@@ -268,9 +273,6 @@ app.put('/tasks/:id', (req, res) => {
     );
 
 });
-
-
-
 app.delete('/tasks/:id', (req, res) => {
 
     const id = req.params.id;
@@ -282,48 +284,22 @@ app.delete('/tasks/:id', (req, res) => {
     `;
 
 
-    db.query(sql, [id], (err) => {
-
-        if (err) {
-
-            res.send('Error deleting task');
-
-        } else {
-
-            res.send('Task deleted successfully');
-
-        }
-
-    });
-
-});
-
-app.post('/register', async (req, res) => {
-
-    const { Name, Email, Password } = req.body;
-
-
-    const hashedPassword = await bcrypt.hash(Password, 10);
-
-
-    const sql = `
-        INSERT INTO User (Name, Email, Password, Created_at)
-        VALUES (?, ?, ?, NOW())
-    `;
-
-
     db.query(
         sql,
-        [Name, Email, hashedPassword],
-        (err) => {
+        [id],
+        (err, result) => {
 
             if (err) {
 
-                res.send('Error registering user');
+                console.log(err);
+
+                res.status(500).send('Error deleting task');
 
             } else {
 
-                res.send('User registered successfully');
+                console.log("Delete result:", result);
+
+                res.send('Task deleted successfully');
 
             }
 
@@ -331,8 +307,6 @@ app.post('/register', async (req, res) => {
     );
 
 });
-
-
 
 
 app.post('/login', (req, res) => {
