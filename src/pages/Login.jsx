@@ -9,33 +9,49 @@ function Login() {
   const [password, setPassword] = useState("");
 
   async function handleLogin(e) {
-    e.preventDefault();
 
-    try {
-      console.log("Sending login request:", {
-        Email: email,
-        Password: "******",
-      });
+  e.preventDefault();
 
-      const response = await api.post("/login", {
-        Email: email,
-        Password: password,
-      });
+  if (!email || !password) {
 
-      console.log("Backend response:", response.data);
+    alert("Please enter email and password");
 
-      localStorage.setItem("token", response.data.token);
+    return;
 
-      alert("Login successful!");
-
-      navigate("/dashboard");
-
-    } catch (error) {
-      console.log("Login error:", error.response?.data || error.message);
-
-      alert("Login failed!");
-    }
   }
+
+
+  try {
+
+    const response = await api.post("/login", {
+
+      Email: email,
+
+      Password: password,
+
+    });
+
+
+    localStorage.setItem("token", response.data.token);
+
+
+    alert("Login successful!");
+
+
+    navigate("/dashboard");
+
+
+  } catch (error) {
+
+
+    alert(
+      error.response?.data?.message || "Login failed!"
+    );
+
+
+  }
+
+}
 
   return (
     <div style={{ padding: "40px" }}>

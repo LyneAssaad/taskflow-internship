@@ -16,7 +16,9 @@ function Projects() {
 
 
   useEffect(() => {
+
     fetchProjects();
+
   }, []);
 
 
@@ -26,18 +28,10 @@ function Projects() {
 
     setLoading(true);
     setError("");
-    
+
     try {
 
-      const token = localStorage.getItem("token");
-
-
-      const response = await api.get("/projects", {
-        headers: {
-          authorization: token,
-        },
-      });
-
+      const response = await api.get("/projects");
 
       setProjects(response.data);
 
@@ -85,10 +79,6 @@ function Projects() {
     try {
 
 
-      const token = localStorage.getItem("token");
-
-
-
       await api.post(
 
         "/projects",
@@ -97,12 +87,6 @@ function Projects() {
           Name: name,
           Description: description,
           User_id: 1
-        },
-
-        {
-          headers: {
-            authorization: token,
-          },
         }
 
       );
@@ -110,6 +94,7 @@ function Projects() {
 
 
       setName("");
+
       setDescription("");
 
       fetchProjects();
@@ -156,10 +141,6 @@ function Projects() {
     try {
 
 
-      const token = localStorage.getItem("token");
-
-
-
       await api.put(
 
         `/projects/${editingId}`,
@@ -167,12 +148,6 @@ function Projects() {
         {
           Name: name,
           Description: description,
-        },
-
-        {
-          headers: {
-            authorization: token,
-          },
         }
 
       );
@@ -226,19 +201,7 @@ function Projects() {
     try {
 
 
-      const token = localStorage.getItem("token");
-
-
-
-      await api.delete(`/projects/${id}`, {
-
-        headers: {
-
-          authorization: token,
-
-        },
-
-      });
+      await api.delete(`/projects/${id}`);
 
 
 
@@ -318,7 +281,6 @@ function Projects() {
 
 
       {
-
         editingId ? (
 
           <button onClick={updateProject}>
@@ -329,7 +291,6 @@ function Projects() {
 
 
         ) : (
-
 
           <button onClick={createProject}>
 
@@ -377,16 +338,11 @@ function Projects() {
 
       {!loading && projects.length === 0 ? (
 
-
         <p>No projects found.</p>
-
-
 
       ) : (
 
-
         !loading && (
-
 
           <table border="1" cellPadding="10">
 
@@ -515,7 +471,6 @@ function Projects() {
 
 
     </div>
-
 
   );
 

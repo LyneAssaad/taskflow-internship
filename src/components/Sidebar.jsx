@@ -1,6 +1,17 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom";
 
 function Sidebar() {
+
+  const navigate = useNavigate();
+
+  function handleLogout() {
+
+    localStorage.removeItem("token");
+
+    navigate("/");
+
+  }
+
   return (
     <div
       style={{
@@ -33,13 +44,20 @@ function Sidebar() {
           </Link>
         </li>
 
-        <li style={{ margin: "15px 0" }}>
+        <li
+          onClick={handleLogout}
+          style={{
+            margin: "15px 0",
+            cursor: "pointer",
+            color: "white",
+          }}
+        >
           Logout
         </li>
 
       </ul>
     </div>
-  )
+  );
 }
 
-export default Sidebar
+export default Sidebar;

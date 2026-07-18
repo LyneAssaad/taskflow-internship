@@ -33,19 +33,7 @@ function Tasks() {
 
     try {
 
-      const token = localStorage.getItem("token");
-
-
-      const response = await api.get("/tasks", {
-
-        headers: {
-
-          authorization: token,
-
-        },
-
-      });
-
+      const response = await api.get("/tasks");
 
       setTasks(response.data);
 
@@ -111,10 +99,6 @@ function Tasks() {
     try {
 
 
-      const token = localStorage.getItem("token");
-
-
-
       await api.post(
 
         "/tasks",
@@ -130,16 +114,6 @@ function Tasks() {
           Project_id: projectId,
 
           User_id: 1
-
-        },
-
-        {
-
-          headers: {
-
-            authorization: token,
-
-          },
 
         }
 
@@ -166,8 +140,9 @@ function Tasks() {
 
       console.log(error);
 
-      setError("Failed to create task.");
-
+      setError(
+        error.response?.data?.message || "Failed to create task."
+      );
 
     }
 
@@ -208,10 +183,6 @@ function Tasks() {
     try {
 
 
-      const token = localStorage.getItem("token");
-
-
-
       await api.put(
 
         `/tasks/${editingId}`,
@@ -225,16 +196,6 @@ function Tasks() {
           Status: status,
 
           Project_id: projectId
-
-        },
-
-        {
-
-          headers: {
-
-            authorization: token,
-
-          },
 
         }
 
@@ -301,23 +262,7 @@ function Tasks() {
     try {
 
 
-      const token = localStorage.getItem("token");
-
-
-
-      await api.delete(`/tasks/${id}`, {
-
-
-        headers: {
-
-
-          authorization: token,
-
-
-        },
-
-
-      });
+      await api.delete(`/tasks/${id}`);
 
 
 
@@ -357,136 +302,84 @@ function Tasks() {
 
 
       <h2>
-
         {editingId ? "Edit Task" : "Create Task"}
-
       </h2>
 
 
 
 
-
       <input
-
         type="text"
-
         placeholder="Task title"
-
         value={title}
-
         onChange={(e) => setTitle(e.target.value)}
-
       />
 
 
-
       <br /><br />
-
 
 
 
       <textarea
-
         placeholder="Task description"
-
         value={description}
-
         onChange={(e) => setDescription(e.target.value)}
-
       />
 
-
-
       <br /><br />
-
 
 
 
       <input
-
         type="text"
-
         placeholder="Project ID"
-
         value={projectId}
-
         onChange={(e) => setProjectId(e.target.value)}
-
       />
 
-
-
       <br /><br />
-
 
 
 
       <select
-
         value={status}
-
         onChange={(e) => setStatus(e.target.value)}
-
       >
 
         <option value="Pending">
-
           Pending
-
         </option>
-
 
         <option value="In Progress">
-
           In Progress
-
         </option>
-
 
         <option value="Completed">
-
           Completed
-
         </option>
 
-
       </select>
-
-
 
 
       <br /><br />
 
 
 
-
-
       {
-
         editingId ? (
 
           <button onClick={updateTask}>
-
             Update Task
-
           </button>
-
 
         ) : (
 
-
           <button onClick={createTask}>
-
             Create Task
-
           </button>
 
-
         )
-
       }
-
-
 
 
 
@@ -497,25 +390,15 @@ function Tasks() {
 
 
 
-
       {loading && (
-
         <p>Loading tasks...</p>
-
       )}
-
-
-
 
 
 
       {error && (
-
         <p>{error}</p>
-
       )}
-
-
 
 
 
@@ -523,139 +406,78 @@ function Tasks() {
 
       {!loading && tasks.length === 0 ? (
 
-
         <p>No tasks found.</p>
-
-
 
       ) : (
 
-
         !loading && (
-
 
           <table border="1" cellPadding="10">
 
-
             <thead>
 
-
               <tr>
-
                 <th>ID</th>
-
                 <th>Title</th>
-
                 <th>Description</th>
-
                 <th>Status</th>
-
                 <th>Project ID</th>
-
                 <th>Actions</th>
-
-
               </tr>
-
 
             </thead>
 
 
-
-
-
             <tbody>
 
-
-
               {
-
                 tasks.map((task) => (
-
 
                   <tr key={task.Task_id}>
 
-
                     <td>{task.Task_id}</td>
-
 
                     <td>{task.Title}</td>
 
-
                     <td>{task.Description}</td>
 
-
                     <td>{task.Status}</td>
-
 
                     <td>{task.Project_id}</td>
 
 
-
-
                     <td>
 
-
-                      <button
-
-                        onClick={() => editTask(task)}
-
-                      >
-
+                      <button onClick={() => editTask(task)}>
                         Edit
-
                       </button>
-
-
-
 
                       {" "}
 
-
-
-
-
-                      <button
-
-                        onClick={() => deleteTask(task.Task_id)}
-
-                      >
-
+                      <button onClick={() => deleteTask(task.Task_id)}>
                         Delete
-
                       </button>
-
-
 
                     </td>
 
 
-
                   </tr>
 
-
                 ))
-
               }
-
-
 
             </tbody>
 
 
-
           </table>
 
-
         )
-
 
       )}
 
 
 
     </div>
-
 
   );
 
