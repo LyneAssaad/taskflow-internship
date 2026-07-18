@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const app = express();
 
 const corsOptions = {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:3001"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -87,7 +87,40 @@ app.get('/projects', verifyToken, (req, res) => {
     });
 
 });
+app.get('/projects/:id', verifyToken, (req, res) => {
 
+    const id = req.params.id;
+
+    const sql = `
+        SELECT * FROM Project
+        WHERE Project_id = ?
+    `;
+
+    db.query(sql, [id], (err, results) => {
+
+        if (err) {
+
+            res.send('Error fetching project');
+
+        } else {
+
+            if (results.length === 0) {
+
+              res.status(404).json({
+               message: "Project not found"
+            });
+
+            } else {
+
+                res.json(results[0]);
+
+            }
+
+        }
+
+    });
+
+});
 
 
 app.post('/projects', (req, res) => {
@@ -220,9 +253,20 @@ app.post('/tasks', (req, res) => {
 
             if (err) {
 
-                res.send('Error creating task');
+    if (err.code === "ER_NO_REFERENCED_ROW_2") {
 
-            } else {
+        return res.status(400).json({
+            message: "Project does not exist"
+        });
+
+    }
+
+
+    return res.status(500).json({
+        message: "Error creating task"
+    });
+
+    } else {
 
                 res.send('Task created successfully');
 
@@ -322,14 +366,18 @@ app.post('/login', (req, res) => {
 
         if (err) {
 
-            return res.send('Error logging in');
+            return res.status(500).json({
+                message: "Error logging in"
+            });
 
         }
 
 
         if (results.length === 0) {
 
-            return res.send('User not found');
+            return res.status(404).json({
+                message: "User not found"
+            });
 
         }
 
@@ -345,7 +393,9 @@ app.post('/login', (req, res) => {
 
         if (!isMatch) {
 
-            return res.send('Wrong password');
+            return res.status(401).json({
+                message: "Wrong password"
+            });
 
         }
 
@@ -366,9 +416,9 @@ app.post('/login', (req, res) => {
         );
 
 
-        res.json({
+        return res.json({
 
-            message: 'Login successful',
+            message: "Login successful",
 
             token: token
 
