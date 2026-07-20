@@ -3,7 +3,7 @@ const cors = require("cors");
 const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+require('dotenv').config();
 const app = express();
 
 const corsOptions = {
@@ -17,14 +17,13 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 
-const JWT_SECRET = 'taskflow_secret_key';
-
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'Lyneassaad2005$$',
-    database: 'taskflow'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 });
 
 
@@ -42,7 +41,11 @@ function verifyToken(req, res, next) {
     const token = req.headers['authorization'];
 
     if (!token) {
-        return res.send('Access denied. No token provided.');
+
+        return res.status(401).json({
+            message: "Access denied. No token provided."
+        });
+
     }
 
     try {
@@ -55,9 +58,12 @@ function verifyToken(req, res, next) {
 
     } catch (err) {
 
-        res.send('Invalid token');
+        return res.status(401).json({
+            message: "Invalid token."
+        });
 
     }
+
 }
 
 
@@ -123,9 +129,11 @@ app.get('/projects/:id', verifyToken, (req, res) => {
 });
 
 
-app.post('/projects', (req, res) => {
+app.post('/projects', verifyToken, (req, res) => {
 
-    const { Name, Description, User_id } = req.body;
+     const { Name, Description } = req.body;
+
+     const User_id = req.user.id;
 
 
     const sql = `
@@ -152,7 +160,7 @@ app.post('/projects', (req, res) => {
 
 
 
-app.put('/projects/:id', (req, res) => {
+app.put('/projects/:id', verifyToken, (req, res) => {
 
     const { Name, Description } = req.body;
 
@@ -184,7 +192,7 @@ app.put('/projects/:id', (req, res) => {
 
 
 
-app.delete('/projects/:id', (req, res) => {
+app.delete('/projects/:id', verifyToken, (req, res) => {
 
     const id = req.params.id;
 
@@ -234,9 +242,11 @@ app.get('/tasks', verifyToken, (req, res) => {
 });
 
 
-app.post('/tasks', (req, res) => {
+app.post('/tasks', verifyToken, (req, res) => {
 
-    const { Title, Description, Status, Project_id, User_id } = req.body;
+    const { Title, Description, Status, Project_id } = req.body;
+
+    const User_id = req.user.id;
 
 
     const sql = `
@@ -279,7 +289,7 @@ app.post('/tasks', (req, res) => {
 
 
 
-app.put('/tasks/:id', (req, res) => {
+app.put('/tasks/:id', verifyToken, (req, res) => {
      console.log("PUT TASK ROUTE REACHED");
 
     const { Title, Description, Status, Project_id } = req.body;
@@ -317,7 +327,7 @@ app.put('/tasks/:id', (req, res) => {
     );
 
 });
-app.delete('/tasks/:id', (req, res) => {
+app.delete('/tasks/:id', verifyToken, (req, res) =>  {
 
     const id = req.params.id;
 
