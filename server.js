@@ -373,16 +373,14 @@ app.post('/login', (req, res) => {
 
     db.query(sql, [Email], async (err, results) => {
 
+if (err) {
 
-        if (err) {
+    return res.status(500).json({
+        message: err.message,
+        sql: err.sqlMessage
+    });
 
-           console.log(err);
-
-           return res.status(500).json({
-           message: err.message
-       });
-
-   }
+}
 
 
         if (results.length === 0) {
