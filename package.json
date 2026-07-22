@@ -4,6 +4,7 @@
   "description": "This is my internship project where I will learn full-stack development using Node.js and GitHub.",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
