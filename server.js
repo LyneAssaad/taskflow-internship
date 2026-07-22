@@ -4,7 +4,9 @@ const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
 const app = express();
+
 
 const corsOptions = {
     origin: ["http://localhost:5173", "http://localhost:3001"],
@@ -13,11 +15,13 @@ const corsOptions = {
     allowedHeaders: ["Content-Type", "Authorization"]
 };
 
+
 app.use(cors(corsOptions));
 app.use(express.json());
 
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
 
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -28,17 +32,25 @@ const db = mysql.createConnection({
 
 
 db.connect((err) => {
+
     if (err) {
+
         console.log('Database connection failed:', err);
+
     } else {
+
         console.log('Connected to MySQL Database');
+
     }
+
 });
+
 
 
 function verifyToken(req, res, next) {
 
     const token = req.headers['authorization'];
+
 
     if (!token) {
 
@@ -48,6 +60,7 @@ function verifyToken(req, res, next) {
 
     }
 
+
     try {
 
         const verified = jwt.verify(token, JWT_SECRET);
@@ -55,6 +68,7 @@ function verifyToken(req, res, next) {
         req.user = verified;
 
         next();
+
 
     } catch (err) {
 
@@ -68,107 +82,152 @@ function verifyToken(req, res, next) {
 
 
 
+
 app.get('/', (req, res) => {
 
     res.send('Hello World from TaskFlow Server');
 
 });
 
+
+
+
+
+
+
+
+// Get all projects
 app.get('/projects', verifyToken, (req, res) => {
 
-    const sql = 'SELECT * FROM Project';
+    const sql = 'SELECT * FROM project';
+
 
     db.query(sql, (err, results) => {
 
+
         if (err) {
 
-            res.send('Error fetching projects');
-
-        } else {
-
-            res.json(results);
+            return res.status(500).json({
+                message: err.message,
+                sql: err.sqlMessage
+            });
 
         }
+
+
+        res.json(results);
+
 
     });
 
 });
+
+
+
+
+
+// Get project by id
 app.get('/projects/:id', verifyToken, (req, res) => {
+
 
     const id = req.params.id;
 
+
     const sql = `
-        SELECT * FROM Project
+        SELECT * FROM project
         WHERE Project_id = ?
     `;
 
+
     db.query(sql, [id], (err, results) => {
+
 
         if (err) {
 
-            res.send('Error fetching project');
-
-        } else {
-
-            if (results.length === 0) {
-
-              res.status(404).json({
-               message: "Project not found"
+            return res.status(500).json({
+                message: err.message,
+                sql: err.sqlMessage
             });
 
-            } else {
+        }
 
-                res.json(results[0]);
 
-            }
+        if (results.length === 0) {
+
+
+            return res.status(404).json({
+                message: "Project not found"
+            });
+
 
         }
+
+
+        res.json(results[0]);
+
 
     });
 
 });
 
 
+
+
+
+// Create project
 app.post('/projects', verifyToken, (req, res) => {
 
-     const { Name, Description } = req.body;
 
-     const User_id = req.user.id;
+    const { Name, Description } = req.body;
+
+
+    const User_id = req.user.id;
 
 
     const sql = `
-        INSERT INTO Project (Name, Description, Created_at, User_id)
+        INSERT INTO project 
+        (Name, Description, Created_at, User_id)
         VALUES (?, ?, NOW(), ?)
     `;
 
 
     db.query(sql, [Name, Description, User_id], (err) => {
 
+
         if (err) {
 
-            res.send('Error creating project');
-
-        } else {
-
-            res.send('Project created successfully');
+            return res.status(500).json({
+                message: err.message,
+                sql: err.sqlMessage
+            });
 
         }
 
+
+        res.send('Project created successfully');
+
+
     });
+
 
 });
 
 
 
+
+
+// Update project
 app.put('/projects/:id', verifyToken, (req, res) => {
 
+
     const { Name, Description } = req.body;
+
 
     const id = req.params.id;
 
 
     const sql = `
-        UPDATE Project
+        UPDATE project
         SET Name = ?, Description = ?
         WHERE Project_id = ?
     `;
@@ -176,84 +235,113 @@ app.put('/projects/:id', verifyToken, (req, res) => {
 
     db.query(sql, [Name, Description, id], (err) => {
 
+
         if (err) {
 
-            res.send('Error updating project');
-
-        } else {
-
-            res.send('Project updated successfully');
+            return res.status(500).json({
+                message: err.message,
+                sql: err.sqlMessage
+            });
 
         }
 
+
+        res.send('Project updated successfully');
+
+
     });
+
 
 });
 
 
 
+
+
+// Delete project
 app.delete('/projects/:id', verifyToken, (req, res) => {
+
 
     const id = req.params.id;
 
 
     const sql = `
-        DELETE FROM Project
+        DELETE FROM project
         WHERE Project_id = ?
     `;
 
 
     db.query(sql, [id], (err) => {
 
+
         if (err) {
 
-            res.send('Error deleting project');
-
-        } else {
-
-            res.send('Project deleted successfully');
+            return res.status(500).json({
+                message: err.message,
+                sql: err.sqlMessage
+            });
 
         }
 
+
+        res.send('Project deleted successfully');
+
+
     });
+
 
 });
 
 
+
+// Get all tasks
 app.get('/tasks', verifyToken, (req, res) => {
 
-    const sql = 'SELECT * FROM Task';
+
+    const sql = 'SELECT * FROM task';
 
 
     db.query(sql, (err, results) => {
 
+
         if (err) {
 
-            res.send('Error fetching tasks');
-
-        } else {
-
-            res.json(results);
+            return res.status(500).json({
+                message: err.message,
+                sql: err.sqlMessage
+            });
 
         }
 
+
+        res.json(results);
+
+
     });
+
 
 });
 
 
+
+
+
+// Create task
 app.post('/tasks', verifyToken, (req, res) => {
 
+
     const { Title, Description, Status, Project_id } = req.body;
+
 
     const User_id = req.user.id;
 
 
     const sql = `
-        INSERT INTO Task 
+        INSERT INTO task
         (Title, Description, Status, Created_at, Project_id, User_id)
         VALUES (?, ?, ?, NOW(), ?, ?)
     `;
+
 
 
     db.query(
@@ -261,49 +349,62 @@ app.post('/tasks', verifyToken, (req, res) => {
         [Title, Description, Status, Project_id, User_id],
         (err) => {
 
+
             if (err) {
 
-    if (err.code === "ER_NO_REFERENCED_ROW_2") {
 
-        return res.status(400).json({
-            message: "Project does not exist"
-        });
-
-    }
+                if (err.code === "ER_NO_REFERENCED_ROW_2") {
 
 
-    return res.status(500).json({
-        message: "Error creating task"
-    });
+                    return res.status(400).json({
+                        message: "Project does not exist"
+                    });
 
-    } else {
 
-                res.send('Task created successfully');
+                }
+
+
+
+                return res.status(500).json({
+                    message: err.message,
+                    sql: err.sqlMessage
+                });
+
 
             }
 
+
+
+            res.send('Task created successfully');
+
+
         }
     );
+
 
 });
 
 
 
+
+
+// Update task
 app.put('/tasks/:id', verifyToken, (req, res) => {
-     console.log("PUT TASK ROUTE REACHED");
+
 
     const { Title, Description, Status, Project_id } = req.body;
 
-    console.log("Backend received:", req.body);
 
     const id = req.params.id;
 
 
+
     const sql = `
-        UPDATE Task
+        UPDATE task
         SET Title = ?, Description = ?, Status = ?, Project_id = ?
         WHERE Task_id = ?
     `;
+
 
 
     db.query(
@@ -311,31 +412,52 @@ app.put('/tasks/:id', verifyToken, (req, res) => {
         [Title, Description, Status, Project_id, id],
         (err, result) => {
 
+
             if (err) {
 
+
                 console.log(err);
-                res.send('Error updating task');
 
-            } else {
 
-                console.log("Database update result:", result);
-                res.send('Task updated successfully');
+                return res.status(500).json({
+                    message: err.message,
+                    sql: err.sqlMessage
+                });
+
 
             }
+
+
+
+            console.log("Database update result:", result);
+
+
+            res.send('Task updated successfully');
+
 
         }
     );
 
+
 });
-app.delete('/tasks/:id', verifyToken, (req, res) =>  {
+
+
+
+
+
+// Delete task
+app.delete('/tasks/:id', verifyToken, (req, res) => {
+
 
     const id = req.params.id;
 
 
+
     const sql = `
-        DELETE FROM Task
+        DELETE FROM task
         WHERE Task_id = ?
     `;
+
 
 
     db.query(
@@ -343,56 +465,83 @@ app.delete('/tasks/:id', verifyToken, (req, res) =>  {
         [id],
         (err, result) => {
 
+
             if (err) {
+
 
                 console.log(err);
 
-                res.status(500).send('Error deleting task');
 
-            } else {
+                return res.status(500).json({
+                    message: err.message,
+                    sql: err.sqlMessage
+                });
 
-                console.log("Delete result:", result);
-
-                res.send('Task deleted successfully');
 
             }
+
+
+
+            console.log("Delete result:", result);
+
+
+            res.send('Task deleted successfully');
+
 
         }
     );
 
+
 });
+
+
+
+
+
 
 
 app.post('/login', (req, res) => {
 
+
     const { Email, Password } = req.body;
+
 
 
     const sql = "SELECT * FROM user WHERE Email = ?";
 
 
+
     db.query(sql, [Email], async (err, results) => {
 
-if (err) {
 
-    return res.status(500).json({
-        message: err.message,
-        sql: err.sqlMessage
-    });
 
-}
+        if (err) {
+
+
+            return res.status(500).json({
+                message: err.message,
+                sql: err.sqlMessage
+            });
+
+
+        }
+
 
 
         if (results.length === 0) {
+
 
             return res.status(404).json({
                 message: "User not found"
             });
 
+
         }
 
 
+
         const user = results[0];
+
 
 
         const isMatch = await bcrypt.compare(
@@ -401,13 +550,17 @@ if (err) {
         );
 
 
+
         if (!isMatch) {
+
 
             return res.status(401).json({
                 message: "Wrong password"
             });
 
+
         }
+
 
 
         const token = jwt.sign(
@@ -426,7 +579,8 @@ if (err) {
         );
 
 
-        return res.json({
+
+        res.json({
 
             message: "Login successful",
 
@@ -435,14 +589,23 @@ if (err) {
         });
 
 
+
     });
+
 
 });
 
 
 
+
+
+
+
+
 app.listen(3000, () => {
 
+
     console.log('Server is running on port 3000');
+
 
 });
