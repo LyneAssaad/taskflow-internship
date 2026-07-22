@@ -368,7 +368,7 @@ app.post('/login', (req, res) => {
     const { Email, Password } = req.body;
 
 
-    const sql = "SELECT * FROM User WHERE Email = ?";
+    const sql = "SELECT * FROM user WHERE Email = ?";
 
 
     db.query(sql, [Email], async (err, results) => {
