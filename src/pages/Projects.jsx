@@ -12,6 +12,7 @@ function Projects() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
 
 
@@ -20,6 +21,22 @@ function Projects() {
     fetchProjects();
 
   }, []);
+
+
+
+
+  function showMessage(text) {
+
+    setMessage(text);
+
+    setTimeout(() => {
+
+      setMessage("");
+
+    }, 3000);
+
+  }
+
 
 
 
@@ -56,10 +73,12 @@ function Projects() {
 
   async function createProject() {
 
+    setMessage("");
+    setError("");
 
     if (name.trim() === "") {
 
-      alert("Project name is required.");
+      showMessage("❌ Project name is required.");
 
       return;
 
@@ -68,7 +87,7 @@ function Projects() {
 
     if (description.trim() === "") {
 
-      alert("Project description is required.");
+      showMessage("❌ Project description is required.");
 
       return;
 
@@ -86,11 +105,13 @@ function Projects() {
         {
           Name: name,
           Description: description,
-          User_id: 1
+         
         }
 
       );
 
+
+      showMessage("✅ Project created successfully!");
 
 
       setName("");
@@ -106,7 +127,9 @@ function Projects() {
 
       console.log(error);
 
-      setError("Failed to create project.");
+      showMessage(
+        "❌ " + (error.response?.data?.message || "Failed to create project.")
+      );
 
 
     }
@@ -153,6 +176,8 @@ function Projects() {
       );
 
 
+      showMessage("✅ Project updated successfully!");
+
 
       setEditingId(null);
 
@@ -164,12 +189,14 @@ function Projects() {
 
 
 
-    } catch (error) {
+    } catch(error) {
 
 
       console.log(error);
 
-      setError("Failed to update project.");
+      showMessage(
+        "❌ Failed to update project."
+      );
 
 
     }
@@ -204,17 +231,21 @@ function Projects() {
       await api.delete(`/projects/${id}`);
 
 
+      showMessage("✅ Project deleted successfully!");
+
 
       fetchProjects();
 
 
 
-    } catch (error) {
+    } catch(error) {
 
 
       console.log(error);
 
-      setError("Failed to delete project.");
+      showMessage(
+        "❌ Failed to delete project."
+      );
 
 
     }
@@ -306,6 +337,21 @@ function Projects() {
 
 
 
+      {message && (
+
+        <p
+          style={{
+            color: message.startsWith("✅") ? "green" : "red",
+            fontWeight: "bold",
+          }}
+        >
+          {message}
+        </p>
+
+      )}
+
+
+
 
 
       <h2>Project List</h2>
@@ -346,9 +392,7 @@ function Projects() {
 
           <table border="1" cellPadding="10">
 
-
             <thead>
-
 
               <tr>
 
@@ -360,113 +404,57 @@ function Projects() {
 
                 <th>Actions</th>
 
-
               </tr>
-
 
             </thead>
 
 
 
-
-
             <tbody>
 
-
-
               {
-
                 projects.map((project) => (
-
 
                   <tr key={project.Project_id}>
 
+                    <td>{project.Project_id}</td>
+
+                    <td>{project.Name}</td>
+
+                    <td>{project.Description}</td>
 
                     <td>
-
-                      {project.Project_id}
-
-                    </td>
-
-
-                    <td>
-
-                      {project.Name}
-
-                    </td>
-
-
-
-                    <td>
-
-                      {project.Description}
-
-                    </td>
-
-
-
-
-                    <td>
-
-
 
                       <button
-
                         onClick={() => editProject(project)}
-
                       >
-
                         Edit
-
                       </button>
-
-
 
 
                       {" "}
 
 
-
-
                       <button
-
                         onClick={() => deleteProject(project.Project_id)}
-
                       >
-
                         Delete
-
                       </button>
-
-
-
 
                     </td>
 
-
-
                   </tr>
 
-
                 ))
-
               }
-
-
-
 
             </tbody>
 
-
-
           </table>
-
 
         )
 
-
       )}
-
 
 
 

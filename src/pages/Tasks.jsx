@@ -14,6 +14,7 @@ function Tasks() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
 
 
@@ -22,6 +23,22 @@ function Tasks() {
     fetchTasks();
 
   }, []);
+
+
+
+
+  function showMessage(text) {
+
+    setMessage(text);
+
+    setTimeout(() => {
+
+      setMessage("");
+
+    }, 3000);
+
+  }
+
 
 
 
@@ -66,10 +83,13 @@ function Tasks() {
 
   async function createTask() {
 
+    setMessage("");
+    setError("");
+
 
     if (title.trim() === "") {
 
-      alert("Task title is required.");
+      showMessage("❌ Task title is required.");
 
       return;
 
@@ -78,7 +98,7 @@ function Tasks() {
 
     if (description.trim() === "") {
 
-      alert("Task description is required.");
+      showMessage("❌ Task description is required.");
 
       return;
 
@@ -87,7 +107,7 @@ function Tasks() {
 
     if (projectId.trim() === "") {
 
-      alert("Project ID is required.");
+      showMessage("❌ Project ID is required.");
 
       return;
 
@@ -113,11 +133,14 @@ function Tasks() {
 
           Project_id: projectId,
 
-          User_id: 1
+         
 
         }
 
       );
+
+
+      showMessage("✅ Task created successfully!");
 
 
 
@@ -140,9 +163,11 @@ function Tasks() {
 
       console.log(error);
 
-      setError(
-        error.response?.data?.message || "Failed to create task."
+
+      showMessage(
+        "❌ " + (error.response?.data?.message || "Failed to create task.")
       );
+
 
     }
 
@@ -179,6 +204,9 @@ function Tasks() {
 
   async function updateTask() {
 
+    setMessage("");
+    setError("");
+
 
     try {
 
@@ -203,6 +231,10 @@ function Tasks() {
 
 
 
+      showMessage("✅ Task updated successfully!");
+
+
+
       setEditingId(null);
 
       setTitle("");
@@ -224,7 +256,7 @@ function Tasks() {
 
       console.log(error);
 
-      setError("Failed to update task.");
+      showMessage("❌ Failed to update task.");
 
 
     }
@@ -266,6 +298,10 @@ function Tasks() {
 
 
 
+      showMessage("✅ Task deleted successfully!");
+
+
+
       fetchTasks();
 
 
@@ -276,7 +312,7 @@ function Tasks() {
 
       console.log(error);
 
-      setError("Failed to delete task.");
+      showMessage("❌ Failed to delete task.");
 
 
     }
@@ -383,6 +419,22 @@ function Tasks() {
 
 
 
+      {message && (
+
+        <p
+          style={{
+            color: message.startsWith("✅") ? "green" : "red",
+            fontWeight: "bold",
+          }}
+        >
+          {message}
+        </p>
+
+      )}
+
+
+
+
 
 
       <h2>Task List</h2>
@@ -417,12 +469,14 @@ function Tasks() {
             <thead>
 
               <tr>
+
                 <th>ID</th>
                 <th>Title</th>
                 <th>Description</th>
                 <th>Status</th>
                 <th>Project ID</th>
                 <th>Actions</th>
+
               </tr>
 
             </thead>
