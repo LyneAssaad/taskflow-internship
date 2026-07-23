@@ -3,48 +3,91 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function Login() {
+
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
 
   async function handleLogin(e) {
+
     e.preventDefault();
 
+    // Clear previous message
+    setMessage("");
+
+    if (!email || !password) {
+
+      setMessage("Please enter email and password");
+      setMessageType("error");
+
+      return;
+
+    }
+
     try {
-      console.log("Sending login request:", {
-        Email: email,
-        Password: "******",
-      });
 
       const response = await api.post("/login", {
+
         Email: email,
         Password: password,
+
       });
 
-      console.log("Backend response:", response.data);
 
       localStorage.setItem("token", response.data.token);
 
-      alert("Login successful!");
 
-      navigate("/dashboard");
+      setMessage("Login successful!");
+      setMessageType("success");
+
+
+      setTimeout(() => {
+
+        setMessage("");
+
+        navigate("/dashboard");
+
+      }, 2000);
+
 
     } catch (error) {
-      console.log("Login error:", error.response?.data || error.message);
 
-      alert("Login failed!");
+
+      setMessage(
+        error.response?.data?.message || "Login failed!"
+      );
+
+      setMessageType("error");
+
+
+      setTimeout(() => {
+
+        setMessage("");
+
+      }, 2000);
+
+
     }
+
   }
+
 
   return (
     <div style={{ padding: "40px" }}>
+
       <h1>TaskFlow Login</h1>
+
 
       <form onSubmit={handleLogin}>
 
+
         <div>
+
           <label>Email:</label>
+
           <br />
 
           <input
@@ -53,12 +96,17 @@ function Login() {
             placeholder="Enter your email"
             onChange={(e) => setEmail(e.target.value)}
           />
+
         </div>
+
 
         <br />
 
+
         <div>
+
           <label>Password:</label>
+
           <br />
 
           <input
@@ -67,15 +115,39 @@ function Login() {
             placeholder="Enter your password"
             onChange={(e) => setPassword(e.target.value)}
           />
+
         </div>
 
+
         <br />
+
+
+        {message && (
+
+          <p
+            style={{
+              color: messageType === "success" ? "green" : "red",
+              fontWeight: "bold",
+              fontSize: "18px",
+            }}
+          >
+
+            {messageType === "success" ? "✅ " : "❌ "}
+            {message}
+
+          </p>
+
+        )}
+
 
         <button type="submit">
           Login
         </button>
 
+
       </form>
+
+
     </div>
   );
 }

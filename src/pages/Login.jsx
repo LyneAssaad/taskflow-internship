@@ -9,6 +9,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
 
   async function handleLogin(e) {
 
@@ -19,7 +20,8 @@ function Login() {
 
     if (!email || !password) {
 
-      setMessage("❌ Please enter email and password");
+      setMessage("Please enter email and password");
+      setMessageType("error");
 
       return;
 
@@ -34,31 +36,53 @@ function Login() {
 
       });
 
+
       localStorage.setItem("token", response.data.token);
 
-      setMessage("✅ Login successful!");
 
-      // Wait a moment so the user can see the success message
+      setMessage("Login successful!");
+      setMessageType("success");
+
+
       setTimeout(() => {
+
+        setMessage("");
+
         navigate("/dashboard");
-      }, 1000);
+
+      }, 2000);
+
 
     } catch (error) {
 
+
       setMessage(
-        "❌ " + (error.response?.data?.message || "Login failed!")
+        error.response?.data?.message || "Login failed!"
       );
+
+      setMessageType("error");
+
+
+      setTimeout(() => {
+
+        setMessage("");
+
+      }, 2000);
+
 
     }
 
   }
+
 
   return (
     <div style={{ padding: "40px" }}>
 
       <h1>TaskFlow Login</h1>
 
+
       <form onSubmit={handleLogin}>
+
 
         <div>
 
@@ -75,7 +99,9 @@ function Login() {
 
         </div>
 
+
         <br />
+
 
         <div>
 
@@ -92,26 +118,35 @@ function Login() {
 
         </div>
 
+
         <br />
+
 
         {message && (
 
           <p
             style={{
-              color: message.startsWith("✅") ? "green" : "red",
+              color: messageType === "success" ? "green" : "red",
               fontWeight: "bold",
+              fontSize: "18px",
             }}
           >
+
+            {messageType === "success" ? "✅ " : "❌ "}
             {message}
+
           </p>
 
         )}
+
 
         <button type="submit">
           Login
         </button>
 
+
       </form>
+
 
     </div>
   );

@@ -14,6 +14,7 @@ function Tasks() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
 
 
@@ -26,6 +27,22 @@ function Tasks() {
 
 
 
+  function showMessage(text) {
+
+    setMessage(text);
+
+    setTimeout(() => {
+
+      setMessage("");
+
+    }, 3000);
+
+  }
+
+
+
+
+
   async function fetchTasks() {
 
     setLoading(true);
@@ -33,19 +50,7 @@ function Tasks() {
 
     try {
 
-      const token = localStorage.getItem("token");
-
-
-      const response = await api.get("/tasks", {
-
-        headers: {
-
-          authorization: token,
-
-        },
-
-      });
-
+      const response = await api.get("/tasks");
 
       setTasks(response.data);
 
@@ -78,10 +83,13 @@ function Tasks() {
 
   async function createTask() {
 
+    setMessage("");
+    setError("");
+
 
     if (title.trim() === "") {
 
-      alert("Task title is required.");
+      showMessage("❌ Task title is required.");
 
       return;
 
@@ -90,7 +98,7 @@ function Tasks() {
 
     if (description.trim() === "") {
 
-      alert("Task description is required.");
+      showMessage("❌ Task description is required.");
 
       return;
 
@@ -99,7 +107,7 @@ function Tasks() {
 
     if (projectId.trim() === "") {
 
-      alert("Project ID is required.");
+      showMessage("❌ Project ID is required.");
 
       return;
 
@@ -109,10 +117,6 @@ function Tasks() {
 
 
     try {
-
-
-      const token = localStorage.getItem("token");
-
 
 
       await api.post(
@@ -129,21 +133,14 @@ function Tasks() {
 
           Project_id: projectId,
 
-          User_id: 1
-
-        },
-
-        {
-
-          headers: {
-
-            authorization: token,
-
-          },
+         
 
         }
 
       );
+
+
+      showMessage("✅ Task created successfully!");
 
 
 
@@ -166,7 +163,10 @@ function Tasks() {
 
       console.log(error);
 
-      setError("Failed to create task.");
+
+      showMessage(
+        "❌ " + (error.response?.data?.message || "Failed to create task.")
+      );
 
 
     }
@@ -204,12 +204,11 @@ function Tasks() {
 
   async function updateTask() {
 
+    setMessage("");
+    setError("");
+
 
     try {
-
-
-      const token = localStorage.getItem("token");
-
 
 
       await api.put(
@@ -226,19 +225,13 @@ function Tasks() {
 
           Project_id: projectId
 
-        },
-
-        {
-
-          headers: {
-
-            authorization: token,
-
-          },
-
         }
 
       );
+
+
+
+      showMessage("✅ Task updated successfully!");
 
 
 
@@ -263,7 +256,7 @@ function Tasks() {
 
       console.log(error);
 
-      setError("Failed to update task.");
+      showMessage("❌ Failed to update task.");
 
 
     }
@@ -301,23 +294,11 @@ function Tasks() {
     try {
 
 
-      const token = localStorage.getItem("token");
+      await api.delete(`/tasks/${id}`);
 
 
 
-      await api.delete(`/tasks/${id}`, {
-
-
-        headers: {
-
-
-          authorization: token,
-
-
-        },
-
-
-      });
+      showMessage("✅ Task deleted successfully!");
 
 
 
@@ -331,7 +312,7 @@ function Tasks() {
 
       console.log(error);
 
-      setError("Failed to delete task.");
+      showMessage("❌ Failed to delete task.");
 
 
     }
@@ -357,135 +338,99 @@ function Tasks() {
 
 
       <h2>
-
         {editingId ? "Edit Task" : "Create Task"}
-
       </h2>
 
 
 
 
-
       <input
-
         type="text"
-
         placeholder="Task title"
-
         value={title}
-
         onChange={(e) => setTitle(e.target.value)}
-
       />
 
 
-
       <br /><br />
-
 
 
 
       <textarea
-
         placeholder="Task description"
-
         value={description}
-
         onChange={(e) => setDescription(e.target.value)}
-
       />
 
-
-
       <br /><br />
-
 
 
 
       <input
-
         type="text"
-
         placeholder="Project ID"
-
         value={projectId}
-
         onChange={(e) => setProjectId(e.target.value)}
-
       />
 
-
-
       <br /><br />
-
 
 
 
       <select
-
         value={status}
-
         onChange={(e) => setStatus(e.target.value)}
-
       >
 
         <option value="Pending">
-
           Pending
-
         </option>
-
 
         <option value="In Progress">
-
           In Progress
-
         </option>
-
 
         <option value="Completed">
-
           Completed
-
         </option>
 
-
       </select>
-
-
 
 
       <br /><br />
 
 
 
-
-
       {
-
         editingId ? (
 
           <button onClick={updateTask}>
-
             Update Task
-
           </button>
-
 
         ) : (
 
-
           <button onClick={createTask}>
-
             Create Task
-
           </button>
 
-
         )
-
       }
 
+
+
+      {message && (
+
+        <p
+          style={{
+            color: message.startsWith("✅") ? "green" : "red",
+            fontWeight: "bold",
+          }}
+        >
+          {message}
+        </p>
+
+      )}
 
 
 
@@ -497,25 +442,15 @@ function Tasks() {
 
 
 
-
       {loading && (
-
         <p>Loading tasks...</p>
-
       )}
-
-
-
 
 
 
       {error && (
-
         <p>{error}</p>
-
       )}
-
-
 
 
 
@@ -523,139 +458,80 @@ function Tasks() {
 
       {!loading && tasks.length === 0 ? (
 
-
         <p>No tasks found.</p>
-
-
 
       ) : (
 
-
         !loading && (
-
 
           <table border="1" cellPadding="10">
 
-
             <thead>
-
 
               <tr>
 
                 <th>ID</th>
-
                 <th>Title</th>
-
                 <th>Description</th>
-
                 <th>Status</th>
-
                 <th>Project ID</th>
-
                 <th>Actions</th>
 
-
               </tr>
-
 
             </thead>
 
 
-
-
-
             <tbody>
 
-
-
               {
-
                 tasks.map((task) => (
-
 
                   <tr key={task.Task_id}>
 
-
                     <td>{task.Task_id}</td>
-
 
                     <td>{task.Title}</td>
 
-
                     <td>{task.Description}</td>
 
-
                     <td>{task.Status}</td>
-
 
                     <td>{task.Project_id}</td>
 
 
-
-
                     <td>
 
-
-                      <button
-
-                        onClick={() => editTask(task)}
-
-                      >
-
+                      <button onClick={() => editTask(task)}>
                         Edit
-
                       </button>
-
-
-
 
                       {" "}
 
-
-
-
-
-                      <button
-
-                        onClick={() => deleteTask(task.Task_id)}
-
-                      >
-
+                      <button onClick={() => deleteTask(task.Task_id)}>
                         Delete
-
                       </button>
-
-
 
                     </td>
 
 
-
                   </tr>
 
-
                 ))
-
               }
-
-
 
             </tbody>
 
 
-
           </table>
 
-
         )
-
 
       )}
 
 
 
     </div>
-
 
   );
 
